@@ -429,6 +429,9 @@ class CSSResources(BaseResources):
 
     Once configured, a Resource object exposes the following public attributes:
 
+    Methods:
+        add_css: append custom CSS to the css_raw attribute
+
     Attributes:
         css_raw : any raw CSS that needs to be places inside ``<style>`` tags
         css_files : URLs of any CSS files that need to be loaded by ``<link>`` tags
@@ -438,6 +441,20 @@ class CSSResources(BaseResources):
 
     '''
 
+    def __init__(self, *args, **kwargs):
+        super(BaseResources, self).__init__(*args, **kwargs)
+        self.extra_css = []
+        self.extra_css_files = []
+
+    def add_css(self, input_css):
+        self.extra_css.append(input_css)
+
+    def add_css_files(self, filenames):
+        if hasattr(filenames, '__iter__') and not isinstance(filenames, string_types):
+            self.extr_css_files.extend(filenames)
+        else:
+            self.extr_css_files.append(filenames)
+
     @property
     def css_files(self):
         files, _ = self._resolve('css')
@@ -445,11 +462,18 @@ class CSSResources(BaseResources):
         external_resources = self._collect_external_resources("__css__")
         files.extend(external_resources)
 
+        if self.extra_css_files:
+            files.extend(extra_css_files)
+
         return files
 
     @property
     def css_raw(self):
         _, raw = self._resolve('css')
+
+        if self.extra_css:
+            raw.extend(self.extra_css)
+
         return raw
 
     @property
